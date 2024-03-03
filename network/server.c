@@ -11,6 +11,7 @@
         client if the path is valid.
  */
 #include "csapp.h"
+#include <string.h>
 
 /**
 Logs established connections to the server
@@ -43,15 +44,25 @@ Parses path to file and sends file contents to client (connfd)
 */
 void processRequest(int connfd, char *request, size_t nbytes) {
   char get[5], path[MAXLINE], http[10], *response;
-  if (sscanf(request, "%s %s %s", get, path, http) == 3) {
-    printf("Path: %s\n", path);
+  if (sscanf(request, "%s %s", get, path) == 2) {
+    printf("%s path: %s, %s\n", get, path, http);
+    if (strcmp(get, "GET") != 0) {
+      sendResponse(connfd, "HTTP/1.1 405 METHOD NOT ALLOWED\n");
+      return;
+    }
   } else {
     sendResponse(connfd, "Usage: GET /path HTTP/1.1\\r\\n\\r\\n\n");
     return;
   }
+  if (sscanf(request, "%s %s %s", NULL, NULL, http) == 1) {
+    if (strcmp(http, "HTTP/1.1\\r\\n\\r\\n") != 0) {
+      sendResponse(connfd, "HTTP/1.1 400 BAD SYNTAX\n");
+      return;
+    }
+  }
   int filefd;
   if ((filefd = open(path, O_RDONLY)) < 0) {
-    sendResponse(connfd, "HTTP/1.1 404 FILE NOT FOUND");
+    sendResponse(connfd, "HTTP/1.1 404 FILE NOT FOUND\n");
     return;
   }
   sendResponse(connfd, "HTTP/1.1 200 OK\n");
