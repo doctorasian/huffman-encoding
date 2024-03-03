@@ -29,6 +29,8 @@ char
 typedef struct Node {
   double frequency;
   int asciiValue;
+  struct Node *leftChild;
+  struct Node *rightChild;
 } node;
 /**
         A structure to represent a heap (Priority Queue / Min Heap) Data
@@ -36,7 +38,7 @@ typedef struct Node {
  */
 
 typedef struct Heap {
-  node **data;      /**< A pointer to your array of nodes. */
+  node **data;     /**< A pointer to your array of nodes. */
   int maxSize;     /**< The maximum size of the heap before it needs to be
                       resized.*/
   int currentSize; /**< The current number of items in the array. */
@@ -46,54 +48,62 @@ typedef struct Heap {
  Create a new empty Heap
  @return A pointer to the new heap
  */
-Heap *makenull();
+heap *makenull(int capacity);
 
 /**
  Free all memory used by the heap
  @param myHeap is the heap to free
  */
-void deleteHeap(Heap *myHeap);
+void deleteHeap(heap *myHeap);
 
 /**
  Ask if the heap is currently empty
  @param myHeap is a pointer to the heap
  @return true if empty and false otherwise
  */
-bool empty(Heap *myHeap);
+bool empty(heap *myHeap);
 
 /**
  What is the smallest value in the heap?
  @param myHeap is the heap to find min of
  @return The smallest value in the heap
  */
-int min(Heap *myHeap);
+node *min(heap *myHeap);
+
+node *extractMin(heap *myHeap);
 
 /**
  Delete the minimum from the heap
  @param myHeap is the heap to delete from
  */
-void deletemin(Heap *myHeap);
+void deletemin(heap *myHeap);
 
 /**
  Downheap starting at the node at index i
  @param myHeap is the heap to modify
  @param i is the index to start from
  */
-void downheap(Heap *myHeap, int i);
+void downheap(heap *myHeap, int i);
+
+node *createNode(double frequency, int asciiValue);
+
+void insertNode(node *newNode, heap *myHeap);
+
+node *combineNodes(node *node01, node *node02);
 
 /**
  Insert value x into the Heap
  @param x is the value to insert
  @param myHeap is the heap to insert into
  */
-void insert(int x, Heap *myHeap);
+void insert(double frequency, int asciiValue, heap *myHeap);
 
 /**
  Upheap starting at node indexed to i
  @param myHeap is the heap to fix
  @param i is the index of the node to start upheaping at
  */
-void upheap(struct Heap *myHeap, int i);
+void upheap(heap *myHeap, int i);
 
 /**
  What is the index of node n's parent?
@@ -122,12 +132,14 @@ int rightChild(int n);
  @param i is the first index to swap
  @param j is the second index to swap with
  */
-void swap(Heap *myHeap, int i, int j);
+void swap(heap *myHeap, int i, int j);
+
+node *searchForAscii(int target, char *huffmanCode, int count, node *nodePtr);
 
 /**
  This function prints the heap and will help you debug.
  @param myHeap is the heap to print
  */
-void printHeap(Heap *myHeap);
+void printHuffman(heap *myHeap);
 
 #endif
