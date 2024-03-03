@@ -52,6 +52,7 @@ void huffman(char *fileName) {
     insertNode(newNode, heap);
   }
   printHuffman(heap);
+  deleteHuffman(heap);
 }
 
 int main() {

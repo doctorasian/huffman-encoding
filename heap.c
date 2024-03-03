@@ -9,15 +9,8 @@
 
  */
 #include "heap.h"
-#include <assert.h>
 #include <stdbool.h>
-
-/**
-        A structure to represent a heap (Priority Queue / Min heap) Data
-Structure. typedef struct heap heap; struct heap{ int* data; < A pointer to your
-array of numbers. int maxSize; < The maximum size of the heap before it needs to
-be resized. int currentSize; < The current number of items in the array.
-}; */
+#include <string.h>
 
 /**
  Create a new empty heap
@@ -33,18 +26,28 @@ heap *makenull(int capacity) {
 }
 
 /**
- Free all memory used by the heap
- @param myHeap is the heap to free
- */
-void deleteheap(heap *myHeap) {
+Helper function that recursively deletes nodes in tree
+@param myNode is the current node to delete
+*/
+void deleteHuffmanHelper(node *myNode) {
+  if (myNode == NULL) {
+    return;
+  }
+  deleteHuffmanHelper(myNode->leftChild);
+  deleteHuffmanHelper(myNode->rightChild);
+  free(myNode);
+}
+
+/**
+This function deletes all the data used by the huffman tree.
+@param myHeap is the heap to delete
+*/
+void deleteHuffman(heap *myHeap) {
   for (int i = 0; i < myHeap->currentSize; i++) {
-    free(myHeap->data[i]);
-    // assert(myHeap->data[i] == NULL);
+    deleteHuffmanHelper(myHeap->data[i]);
   }
   free(myHeap->data);
-  // assert(myHeap->data == NULL);
   free(myHeap);
-  // assert(myHeap == NULL);
 }
 
 /**
@@ -62,6 +65,12 @@ bool empty(heap *myHeap) { return myHeap->data == NULL ? true : false; }
  */
 node *min(heap *myHeap) { return !(empty(myHeap)) ? myHeap->data[0] : NULL; }
 
+/**
+This function combines min() and deletemin() into one function to avoid
+repetition
+@param myHeap is the heap to grab the min value from
+@return node with the most minimum frequency value
+*/
 node *extractMin(heap *myHeap) {
   node *minNode = min(myHeap);
   deletemin(myHeap);
@@ -108,7 +117,11 @@ void downheap(heap *myHeap, int i) {
     downheap(myHeap, minIndex);
   }
 }
-
+/**
+Wrapper function that initializes a new node
+@param frequency is the probability of an ASCII character appearing in textfile
+@param asciiValue is the ASCII value in question
+*/
 node *createNode(double frequency, int asciiValue) {
   node *newNode = malloc(sizeof(node));
   newNode->frequency = frequency;
@@ -118,6 +131,11 @@ node *createNode(double frequency, int asciiValue) {
   return newNode;
 }
 
+/**
+Alternate function to insert() but inserts node to heap
+@param newNode to insert to heap
+@param heap to insert node into
+*/
 void insertNode(node *newNode, heap *myHeap) {
   int size = myHeap->currentSize;
   /* size == capacity */
@@ -130,6 +148,13 @@ void insertNode(node *newNode, heap *myHeap) {
   upheap(myHeap, size);
 }
 
+/**
+This function combines two trees/nodes together by creating a new node and
+setting nodes passed to the function as its children
+@param node01 first node
+@param node02 second node
+@return parent node or root of tree
+*/
 node *combineNodes(node *node01, node *node02) {
   double frequency01 = node01->frequency;
   double frequency02 = node02->frequency;
@@ -214,40 +239,59 @@ void swap(heap *myHeap, int i, int j) {
   myHeap->data[j] = temp;
 }
 
+/**
+This recursive function searches for an ASCII value in the huffman tree.
+For efficiency reasons, it will also build a huffman code as a string
+as it traverses the tree.
+@param target is the ASCII value to find
+@param huffmanCode is the string passed to each recursive call
+@param count keeps track of current index of huffmanCode string
+@param nodePtr as the root node
+@return node containing ASCII value, or NULL if it doesn't exist
+*/
 node *searchForAscii(int target, char *huffmanCode, int count, node *nodePtr) {
-  if (nodePtr != NULL) {
-    if (target == nodePtr->asciiValue) {
-      huffmanCode[count] = '\0';
-      return nodePtr;
-    }
-    if (nodePtr->leftChild != NULL) {
-      huffmanCode[count] = '0';
-      node *result = searchForAscii(target, huffmanCode, count + 1, nodePtr->leftChild);
-      if (result != NULL)
-        return result;
-    }
-    if (nodePtr->rightChild != NULL) {
-      huffmanCode[count] = '1';
-      node *result = searchForAscii(target, huffmanCode, count + 1, nodePtr->rightChild);
-      if (result != NULL)
-        return result;
-    }
+  if (nodePtr == NULL)
+    return NULL;
+  if (target == nodePtr->asciiValue) {
+    huffmanCode[count] = '\0';
+    return nodePtr;
   }
+  if (nodePtr->leftChild != NULL) {
+    huffmanCode[count] = '0';
+    node *result =
+        searchForAscii(target, huffmanCode, count + 1, nodePtr->leftChild);
+    if (result != NULL)
+      return result;
+  }
+  if (nodePtr->rightChild != NULL) {
+    huffmanCode[count] = '1';
+    node *result =
+        searchForAscii(target, huffmanCode, count + 1, nodePtr->rightChild);
+    if (result != NULL)
+      return result;
+  }
+
   return NULL;
 }
+
 /**
- This function prints the heap and will help you debug.
+ This function prints the Huffman tree
  @param myHeap is the heap to print
  */
 void printHuffman(heap *myHeap) {
   printf("| %5s | %s | %s |\n", "ASCII", "Percent", "Code");
+  // int totalBits = 0;
   for (int value = 0; value < 128; value++) {
     char *huffmanCode = malloc(sizeof(char) * 127);
     node *nodePtr = searchForAscii(value, huffmanCode, 0, myHeap->data[0]);
     if (nodePtr == NULL) {
+      free(huffmanCode);
       continue;
     }
     printf("| %5d | %1.5f | %s |\n", nodePtr->asciiValue, nodePtr->frequency,
            huffmanCode);
+    // totalBits += (nodePtr->frequency * 100 * strlen(huffmanCode));
+    free(huffmanCode);
   }
+  // printf("Total Bits: %d\n", totalBits);
 }
