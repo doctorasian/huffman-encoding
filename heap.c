@@ -280,6 +280,7 @@ node *searchForAscii(int target, char *huffmanCode, int count, node *nodePtr) {
  */
 void printHuffman(heap *myHeap) {
   printf("| %5s | %s | %s |\n", "ASCII", "Percent", "Code");
+  printf("| ----- | ------- | ---- |\n");
   // int totalBits = 0;
   for (int value = 0; value < 128; value++) {
     char *huffmanCode = malloc(sizeof(char) * 127);

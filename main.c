@@ -20,6 +20,10 @@
 #include <stdio.h>
 #define MAX_SIZE 128
 
+/**
+Huffman algorithm which constructs a huffman tree and prints it
+@param fileName is the file to open and construct a huffman tree off of
+*/
 void huffman(char *fileName) {
   FILE *file;
 
